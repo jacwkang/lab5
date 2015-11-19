@@ -2,7 +2,15 @@
  * Created by homecomputer on 11/16/15.
  */
 public class Execute {
-	public long run(String instruction, int aLUSrcA, int aLUSrcB) {
+	private PipelineRegister ex;
+	private PipelineRegister mem;
+
+	public Execute (PipelineRegister ex, PipelineRegister mem) {
+		this.ex = ex;
+		this.mem = mem;
+	} 
+
+	public void run(String instruction, int aLUSrcA, int aLUSrcB) {
 		long result = 0;
 		switch(String instruction) {
 			case "lw":
@@ -24,6 +32,6 @@ public class Execute {
 			case "jr":
 				result = aLUSrcA = aLUSrcB;
 		}
-		return result;
+		ex.setValue(result);
 	}
 }
