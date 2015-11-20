@@ -2,13 +2,17 @@
  * Created by homecomputer on 11/16/15.
  */
 public class MemoryAccess {
-	public long run(long result, boolean mem_read) {
-		long memory;
+	private PipelineRegister memory;
+
+	public MemoryAccess(PipelineRegister memory) {
+		this.memory = memory;
+	}
+
+	public void run(long result, boolean mem_read) {
 		if(mem_read) {
-			memory = memory;
+			memory.setValue(memory.getValue());
 		} else {
-			memory = result;
+			memory.setValue(result);
 		}
-		return memory;
 	}
 }

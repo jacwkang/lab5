@@ -11,17 +11,17 @@ import java.util.Scanner;
  */
 public class MulticycleSimulator {
 
-
     static HashMap<String, Integer> registers = new HashMap<String, Integer>(); // Registers and respective values
     static ArrayList<GenInstruction> memory = new ArrayList<GenInstruction>(); // Memory
-    static long programCounter = 4194304;
+    static long programCounter = 0;
+    PipelineRegister input;
 
     /**
      * Helper function to set up registers
      */
     public static void setUpRegisters(){
         for (int i = 0; i < 32; i++) {
-            registers.put(i, 0); // Put 0s in all the registers
+            registers.put("i", 0); // Put 0s in all the registers
         }
     }
 
@@ -29,6 +29,7 @@ public class MulticycleSimulator {
         System.out.println("Simulation Mode");
         String curLine;
         int clock = 0;
+        MulticycleSimulator test = new MulticycleSimulator();
 
         setUpRegisters();
 
@@ -48,8 +49,8 @@ public class MulticycleSimulator {
                         System.out.println("CURLINE: " + curLine);
                         if (curLine.trim().length() > 0) { // Ensure that it's not all whitespaces
                             GenInstruction instruction = readMachineCode(curLine.trim());
-
-                            simulate(instruction);
+                            test.run(instruction);
+                            //simulate(instruction);
                             clock += clockCycle(instruction.opcode);
                             programCounter += 4;
                         }
@@ -59,10 +60,10 @@ public class MulticycleSimulator {
                 else if (input.equals("R")) { // RUN
                     while ((curLine = bufferedReader.readLine()) != null) {
                         GenInstruction instruction = readMachineCode(curLine);
-
-                        simulate(instruction);
+                        test.run(instruction);
+                        //simulate(instruction);
                         clock += clockCycle(instruction.opcode);
-                        programCounter += 4;
+                        //programCounter += 4;
 
                         System.out.println("Clock Cycle: " + clock);
                         System.out.println("Program Counter: " + programCounter);
@@ -86,7 +87,6 @@ public class MulticycleSimulator {
         }
 
     }
-
 
     /**
      * Reads the assembly file line by line
@@ -162,10 +162,10 @@ public class MulticycleSimulator {
         GenInstruction genInstruction = new GenInstruction(); //
 
         if (machine.substring(0,6).contains("100011") || // I INSTRUCTION
-                machine.substring(0,6).contains("001101") ||
-                machine.substring(0,6).contains("000100") ||
-                machine.substring(0,6).contains("001001") ||
-                machine.substring(0,6).contains("000101")) {
+        machine.substring(0,6).contains("001101") ||
+        machine.substring(0,6).contains("000100") ||
+        machine.substring(0,6).contains("001001") ||
+        machine.substring(0,6).contains("000101")) {
             //immediate
             int opcode = Integer.parseInt(machine.substring(0,6), 2); //opcode
             int rs = Integer.parseInt(machine.substring(6, 11), 2); //rs
@@ -178,10 +178,10 @@ public class MulticycleSimulator {
 
         } else if(machine.substring(0,6).contains("000000")) { // R INSTRUCTION
             if(machine.substring(26,32).contains("100101") ||
-                    machine.substring(26,32).contains("100000") ||
-                    machine.substring(26,32).contains("100100") ||
-                    machine.substring(26,32).contains("000000") ||
-                    machine.substring(26,32).contains("101000")) {
+            machine.substring(26,32).contains("100000") ||
+            machine.substring(26,32).contains("100100") ||
+            machine.substring(26,32).contains("000000") ||
+            machine.substring(26,32).contains("101000")) {
                 //register
                 int opcode = Integer.parseInt(machine.substring(0,6), 2); //opcode
                 int rs = Integer.parseInt(machine.substring(6, 11), 2); //rs
@@ -227,69 +227,20 @@ public class MulticycleSimulator {
         return clock;
     }
 
-
-    /**
-     * Parent class - General Instruction
-     */
-    private static class GenInstruction {
-        String type;
-        int opcode;
+    InstructionFetch fetch = new InstructionFetch(input);
+    InstructionDecode decode = new InstructionDecode(input);
+    Execute execute = new Execute(input);
+    MemoryAccess memoryaccess = new MemoryAccess(input);
+    WriteBack writeback = new WriteBack();
+    
+    public void run(GenInstruction instruction) {
+        long result;
+        fetch.run(instruction);
+        decode.setControlLines(instruction);
+        result = execute.run((RInstruction) instruction);
+        memoryaccess.run(input.getValue(), true);
+        writeback.run(result);
     }
-
-    /**
-     * R Instruction
-     * opcode - 000000
-     */
-    private static class RInstruction extends GenInstruction {
-        int opcode;
-        int rs;
-        int rt;
-        int rd;
-        int sa;
-        int function;
-
-        public RInstruction(int opcode, int rs, int rt, int rd, int sa, int function) {
-            this.opcode = opcode;
-            this.rs = rs;
-            this.rt = rt;
-            this.rd = rd;
-            this.sa = sa;
-            this.function = function;
-        }
-    }
-
-    /**
-     * I Instruction
-     *
-     */
-    private static class IInstruction extends GenInstruction {
-        int opcode;
-        int rs;
-        int rt;
-        int immediate;
-
-        public IInstruction (int opcode, int rs, int rt, int immediate) {
-            this.opcode = opcode;
-            this.rs = rs;
-            this.rt = rt;
-            this.immediate = immediate;
-        }
-    }
-
-    /**
-     * J Instruction
-     * opcode - 00001x
-     */
-    private static class JInstruction extends GenInstruction {
-        int opcode;
-        long target;
-
-        public JInstruction (int opcode, long target) {
-            this.opcode = opcode;
-            this.target = target;
-        }
-    }
-
 
     /**
      * Displays the registers at the end of the run
@@ -309,6 +260,6 @@ public class MulticycleSimulator {
      * @param line
      * @return
      */
-/**/
+    /**/
 
 }

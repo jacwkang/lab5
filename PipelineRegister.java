@@ -1,7 +1,7 @@
 public class PipelineRegister {
-	private long value = 0;
-	private long newValue = 0;
-	public PipelineRegister(long value) {
+	private long value;
+	private long newValue;
+	public PipelineRegister(long instruction) {
 		this.value = value;
 	}
 
@@ -9,7 +9,7 @@ public class PipelineRegister {
 		return value;
 	}
 
-	public void setValue(newValue) {
+	public void setValue(long instruction) {
 		this.newValue = newValue;
 	}
 }
